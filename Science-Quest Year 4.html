@@ -1,0 +1,1392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Science Quest Year 4 – Level Up Your Mind</title>
+    <!-- Google Fonts & Font Awesome Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Canvas Confetti Library for Level Up / Mastery -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    
+    <style>
+        :root {
+            --primary-bg: #1a0933;
+            --card-bg: rgba(36, 17, 68, 0.85);
+            --accent-gold: #ffd700;
+            --accent-orange: #ff7700;
+            --accent-green: #00e676;
+            --accent-blue: #00e5ff;
+            --accent-purple: #b388ff;
+            --accent-pink: #ff4081;
+            --text-light: #ffffff;
+            --text-sub: #d1c4e9;
+            --font-heading: 'Fredoka One', cursive;
+            --font-body: 'Nunito', sans-serif;
+            --border-glow: 0 0 15px rgba(0, 229, 255, 0.4);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: manipulation;
+        }
+
+        body {
+            font-family: var(--font-body);
+            background: var(--primary-bg);
+            color: var(--text-light);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow-x: hidden;
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(179, 136, 255, 0.15) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(0, 229, 255, 0.15) 0%, transparent 40%);
+        }
+
+        /* App Container simulated as Mobile/Tablet View on PC */
+        #app-container {
+            width: 100%;
+            max-width: 480px;
+            height: 100vh;
+            max-height: 900px;
+            background: linear-gradient(180deg, #2a085c 0%, #150030 100%);
+            position: relative;
+            box-shadow: 0 0 50px rgba(0,0,0,0.8), 0 0 20px rgba(179, 136, 255, 0.3);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            border-radius: 0;
+        }
+
+        @media (min-height: 700px) and (min-width: 500px) {
+            #app-container {
+                height: 92vh;
+                border-radius: 28px;
+                border: 4px solid #4a1e8c;
+            }
+        }
+
+        /* Screen Management */
+        .screen {
+            display: none;
+            flex-direction: column;
+            width: 100%;
+            height: 100%;
+            padding: 16px;
+            overflow-y: auto;
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 1;
+            padding-bottom: 80px; /* space for navbar */
+        }
+
+        .screen.active {
+            display: flex;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.98); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        /* Top Header Bar */
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(20, 5, 45, 0.9);
+            padding: 10px 14px;
+            border-radius: 18px;
+            margin-bottom: 12px;
+            border: 2px solid #512da8;
+            backdrop-filter: blur(5px);
+            z-index: 10;
+        }
+
+        .user-stat {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-family: var(--font-heading);
+            font-size: 0.9rem;
+            background: rgba(0,0,0,0.3);
+            padding: 4px 10px;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .user-stat i { font-size: 1.1rem; }
+        .stat-coin { color: var(--accent-gold); }
+        .stat-gem { color: var(--accent-blue); }
+        .stat-streak { color: #ff5722; }
+
+        /* Navigation Bar */
+        .bottom-nav {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 68px;
+            background: rgba(18, 4, 40, 0.95);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            border-top: 2px solid #4a1e8c;
+            backdrop-filter: blur(10px);
+            z-index: 100;
+            padding: 0 10px;
+        }
+
+        .nav-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+            background: none;
+            border: none;
+            color: #8e74ba;
+            font-family: var(--font-body);
+            font-weight: 700;
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            width: 20%;
+        }
+
+        .nav-btn i { font-size: 1.3rem; }
+        .nav-btn.active { color: var(--accent-gold); transform: translateY(-2px); }
+        .nav-btn.active i { filter: drop-shadow(0 0 8px var(--accent-gold)); }
+
+        /* UI Elements & Buttons */
+        .btn-action {
+            font-family: var(--font-heading);
+            padding: 12px 24px;
+            font-size: 1.1rem;
+            border: none;
+            border-radius: 16px;
+            cursor: pointer;
+            text-align: center;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.4);
+            box-shadow: 0 6px 0 rgba(0,0,0,0.3), inset 0 2px 0 rgba(255,255,255,0.4);
+            transition: all 0.1s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-action:active {
+            transform: translateY(4px);
+            box-shadow: 0 2px 0 rgba(0,0,0,0.3), inset 0 2px 0 rgba(255,255,255,0.4);
+        }
+
+        .btn-primary { background: linear-gradient(180deg, #ff9800 0%, #e65100 100%); color: #fff; }
+        .btn-success { background: linear-gradient(180deg, #00e676 0%, #008037 100%); color: #fff; }
+        .btn-blue { background: linear-gradient(180deg, #00e5ff 0%, #00838f 100%); color: #fff; }
+        .btn-purple { background: linear-gradient(180deg, #b388ff 0%, #6200ea 100%); color: #fff; }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 16px;
+            border: 2px solid #512da8;
+            margin-bottom: 14px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.3);
+        }
+
+        .section-title {
+            font-family: var(--font-heading);
+            font-size: 1.2rem;
+            color: var(--accent-gold);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* --- SCREEN 1: SPLASH SCREEN --- */
+        #splash-screen {
+            background: radial-gradient(circle at center, #4a1e8c 0%, #1a0933 100%);
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            z-index: 200;
+        }
+
+        .splash-hero-img {
+            width: 180px;
+            height: 180px;
+            background: radial-gradient(circle, #b388ff 0%, transparent 70%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 20px auto;
+            animation: floatHero 3s ease-in-out infinite;
+        }
+
+        @keyframes floatHero {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-12px); }
+        }
+
+        .splash-title {
+            font-family: var(--font-heading);
+            font-size: 2.2rem;
+            color: var(--accent-gold);
+            text-shadow: 0 4px 10px rgba(0,0,0,0.6), 0 0 20px rgba(255, 215, 0, 0.5);
+            line-height: 1.1;
+            margin-bottom: 8px;
+        }
+
+        .splash-sub {
+            color: var(--accent-blue);
+            font-weight: 700;
+            font-size: 1rem;
+            margin-bottom: 30px;
+            letter-spacing: 1px;
+        }
+
+        /* --- SCREEN 2: HOME DASHBOARD --- */
+        .hero-banner {
+            background: linear-gradient(135deg, #4a1e8c 0%, #311b92 100%);
+            border-radius: 20px;
+            padding: 16px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            border: 2px solid var(--accent-purple);
+            position: relative;
+            overflow: hidden;
+            margin-bottom: 14px;
+        }
+
+        .avatar-circle {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #00e5ff, #b388ff);
+            border: 3px solid var(--accent-gold);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.2rem;
+            box-shadow: var(--border-glow);
+            flex-shrink: 0;
+        }
+
+        .hero-info { flex-grow: 1; }
+        .hero-name { font-family: var(--font-heading); font-size: 1.2rem; color: #fff; }
+        .hero-rank { font-weight: 800; color: var(--accent-gold); font-size: 0.85rem; margin-bottom: 6px; }
+
+        .xp-bar-container {
+            width: 100%;
+            height: 12px;
+            background: rgba(0,0,0,0.4);
+            border-radius: 6px;
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .xp-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00e676, #00e5ff);
+            width: 45%;
+            transition: width 0.5s ease;
+        }
+
+        .daily-mission-card {
+            background: linear-gradient(135deg, rgba(255, 152, 0, 0.2), rgba(230, 81, 0, 0.2));
+            border: 1.5px solid var(--accent-orange);
+            border-radius: 16px;
+            padding: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+
+        /* --- SCREEN 3: TOPIC ADVENTURE MAP --- */
+        .map-container {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            padding: 10px 0;
+            position: relative;
+        }
+
+        .topic-node {
+            background: linear-gradient(135deg, rgba(81, 45, 168, 0.9), rgba(49, 27, 146, 0.9));
+            border: 2px solid #7c4dff;
+            border-radius: 20px;
+            padding: 14px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            position: relative;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .topic-node:active { transform: scale(0.97); }
+        .topic-node.locked { opacity: 0.6; filter: grayscale(0.8); }
+
+        .node-icon {
+            width: 55px;
+            height: 55px;
+            border-radius: 16px;
+            background: linear-gradient(135deg, #ff4081, #7c4dff);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.6rem;
+            color: #fff;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            flex-shrink: 0;
+        }
+
+        .node-details { flex-grow: 1; }
+        .node-title { font-family: var(--font-heading); font-size: 1rem; color: #fff; margin-bottom: 2px; }
+        .node-sub { font-size: 0.75rem; color: var(--text-sub); }
+
+        .node-stars {
+            display: flex;
+            gap: 2px;
+            color: var(--accent-gold);
+            font-size: 0.85rem;
+            margin-top: 4px;
+        }
+
+        .node-badge {
+            font-size: 0.7rem;
+            font-weight: 800;
+            padding: 3px 8px;
+            border-radius: 10px;
+            background: rgba(0, 229, 255, 0.2);
+            color: var(--accent-blue);
+            border: 1px solid var(--accent-blue);
+        }
+
+        /* --- SCREEN 4: VISUAL NOTES PAGE --- */
+        .notes-card {
+            background: rgba(25, 10, 50, 0.95);
+            border: 2px solid var(--accent-purple);
+            border-radius: 20px;
+            padding: 16px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .notes-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #4a1e8c;
+            padding-bottom: 10px;
+            margin-bottom: 12px;
+        }
+
+        .notes-content {
+            font-size: 0.95rem;
+            line-height: 1.5;
+            color: #e0e0e0;
+            flex-grow: 1;
+            overflow-y: auto;
+        }
+
+        .notes-content h3 {
+            color: var(--accent-gold);
+            font-family: var(--font-heading);
+            margin: 12px 0 6px 0;
+        }
+
+        .notes-content ul {
+            padding-left: 20px;
+            margin-bottom: 10px;
+        }
+
+        .notes-diagram {
+            width: 100%;
+            background: rgba(0,0,0,0.4);
+            border: 2px dashed var(--accent-blue);
+            border-radius: 14px;
+            padding: 12px;
+            text-align: center;
+            margin: 10px 0;
+        }
+
+        /* --- SCREEN 5: QUIZ PAGE --- */
+        .quiz-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .quiz-progress-bar {
+            flex-grow: 1;
+            height: 10px;
+            background: rgba(0,0,0,0.4);
+            border-radius: 5px;
+            margin: 0 12px;
+            overflow: hidden;
+        }
+
+        .quiz-progress-fill {
+            height: 100%;
+            background: var(--accent-green);
+            width: 10%;
+            transition: width 0.3s;
+        }
+
+        .question-card {
+            background: var(--card-bg);
+            border: 2px solid var(--accent-purple);
+            border-radius: 20px;
+            padding: 16px;
+            margin-bottom: 14px;
+        }
+
+        .q-level-tag {
+            display: inline-block;
+            font-size: 0.7rem;
+            font-weight: 800;
+            padding: 2px 8px;
+            border-radius: 8px;
+            background: #ff4081;
+            color: #fff;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+
+        .q-text {
+            font-family: var(--font-heading);
+            font-size: 1.05rem;
+            color: #fff;
+            margin-bottom: 12px;
+            line-height: 1.3;
+        }
+
+        .options-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .option-btn {
+            background: rgba(255, 255, 255, 0.08);
+            border: 2px solid #512da8;
+            border-radius: 14px;
+            padding: 12px 14px;
+            color: #fff;
+            font-family: var(--font-body);
+            font-size: 0.95rem;
+            font-weight: 700;
+            text-align: left;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .option-btn:hover { background: rgba(179, 136, 255, 0.15); border-color: var(--accent-purple); }
+        .option-btn.selected { border-color: var(--accent-gold); background: rgba(255, 215, 0, 0.15); }
+        .option-btn.correct { background: rgba(0, 230, 118, 0.25) !important; border-color: var(--accent-green) !important; }
+        .option-btn.incorrect { background: rgba(255, 64, 129, 0.25) !important; border-color: var(--accent-pink) !important; }
+
+        .feedback-box {
+            display: none;
+            padding: 12px;
+            border-radius: 14px;
+            margin-top: 12px;
+            font-size: 0.85rem;
+            line-height: 1.4;
+        }
+
+        .feedback-box.correct { background: rgba(0, 230, 118, 0.15); border: 1px solid var(--accent-green); color: #b9f6ca; }
+        .feedback-box.incorrect { background: rgba(255, 64, 129, 0.15); border: 1px solid var(--accent-pink); color: #ff80ab; }
+
+        /* --- SCREEN 6: RESULTS PAGE --- */
+        .results-card {
+            text-align: center;
+            padding: 24px 16px;
+        }
+
+        .result-score-circle {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            border: 6px solid var(--accent-gold);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 16px auto;
+            background: radial-gradient(circle, rgba(255,215,0,0.2), transparent);
+        }
+
+        .score-num { font-family: var(--font-heading); font-size: 2.2rem; color: #fff; }
+        .score-label { font-size: 0.75rem; color: var(--accent-gold); text-transform: uppercase; font-weight: 800; }
+
+        /* --- SCREEN 8: PROGRESS DASHBOARD --- */
+        .badge-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin-top: 8px;
+        }
+
+        .badge-item {
+            background: rgba(0,0,0,0.3);
+            border-radius: 12px;
+            padding: 8px;
+            text-align: center;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .badge-icon { font-size: 1.8rem; margin-bottom: 4px; color: var(--accent-gold); }
+        .badge-name { font-size: 0.65rem; font-weight: 700; color: var(--text-sub); }
+
+        /* --- SCREEN 9: TEACHER / PARENT VIEW --- */
+        .parent-portal-header {
+            background: linear-gradient(135deg, #00838f, #004d40);
+            border-radius: 16px;
+            padding: 14px;
+            margin-bottom: 14px;
+        }
+
+        .parent-stat-row {
+            display: flex;
+            justify-content: space-between;
+            background: rgba(0,0,0,0.2);
+            padding: 8px 12px;
+            border-radius: 10px;
+            margin-top: 8px;
+            font-size: 0.85rem;
+        }
+
+        /* Helper Classes */
+        .text-center { text-align: center; }
+        .mt-10 { margin-top: 10px; }
+        .mt-20 { margin-top: 20px; }
+        .flex-row { display: flex; gap: 10px; }
+        .w-100 { width: 100%; }
+    </style>
+</head>
+<body>
+
+<div id="app-container">
+
+    <!-- TOP HEADER BAR (Persistent across main screens) -->
+    <div class="top-bar" id="top-bar" style="display: none;">
+        <div class="user-stat"><i class="fa-solid fa-fire stat-streak"></i> <span id="hdr-streak">3</span></div>
+        <div class="user-stat"><i class="fa-solid fa-coins stat-coin"></i> <span id="hdr-coins">240</span></div>
+        <div class="user-stat"><i class="fa-solid fa-gem stat-gem"></i> <span id="hdr-gems">15</span></div>
+        <div class="user-stat" style="color: var(--accent-gold);"><i class="fa-solid fa-crown"></i> <span id="hdr-level">Lvl 2</span></div>
+    </div>
+
+    <!-- 1. SPLASH SCREEN -->
+    <div class="screen active" id="splash-screen">
+        <div style="margin-auto: 0;">
+            <div class="splash-hero-img">
+                <i class="fa-solid fa-flask-vial" style="font-size: 5rem; color: var(--accent-gold);"></i>
+            </div>
+            <h1 class="splash-title">SCIENCE QUEST</h1>
+            <p class="splash-sub">YEAR 4 • LEVEL UP YOUR MIND</p>
+            <p style="font-size: 0.85rem; color: var(--text-sub); margin-bottom: 24px; padding: 0 20px;">
+                Embark on an epic science adventure! Solve challenges, unlock heroes, and master Year 4 Science!
+            </p>
+            <button class="btn-action btn-primary w-100" onclick="app.startApp()">
+                <i class="fa-solid fa-play"></i> START ADVENTURE
+            </button>
+        </div>
+    </div>
+
+    <!-- 2. HOME DASHBOARD -->
+    <div class="screen" id="home-screen">
+        <div class="hero-banner">
+            <div class="avatar-circle" id="home-avatar">
+                <i class="fa-solid fa-user-astronaut"></i>
+            </div>
+            <div class="hero-info">
+                <div class="hero-name" id="home-user-name">Science Explorer</div>
+                <div class="hero-rank" id="home-rank-title">Rank: Explorer</div>
+                <div class="xp-bar-container">
+                    <div class="xp-bar-fill" id="home-xp-fill"></div>
+                </div>
+                <div style="font-size: 0.7rem; color: var(--text-sub); margin-top: 3px;" id="home-xp-text">120 / 300 XP to Lvl 3</div>
+            </div>
+        </div>
+
+        <div class="daily-mission-card">
+            <div>
+                <div style="font-family: var(--font-heading); font-size: 0.95rem; color: var(--accent-gold);">
+                    <i class="fa-solid fa-calendar-check"></i> Daily Quest
+                </div>
+                <div style="font-size: 0.8rem; color: #fff;">Complete 1 Topic Quiz Today</div>
+            </div>
+            <button class="btn-action btn-success" style="padding: 6px 12px; font-size: 0.85rem;" onclick="app.navTo('map-screen')">GO</button>
+        </div>
+
+        <div class="card">
+            <div class="section-title"><i class="fa-solid fa-bolt"></i> Quick Actions</div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                <button class="btn-action btn-purple" onclick="app.startMistakeReview()">
+                    <i class="fa-solid fa-rotate-left"></i> Review (<span id="mistake-count">0</span>)
+                </button>
+                <button class="btn-action btn-blue" onclick="app.navTo('arena-screen')">
+                    <i class="fa-solid fa-trophy"></i> Arena
+                </button>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="section-title"><i class="fa-solid fa-book-open"></i> Recent Progress</div>
+            <div style="font-size: 0.85rem; color: var(--text-sub);">
+                Mastery Score: <b style="color: var(--accent-green)" id="home-mastery-pct">0%</b><br>
+                Topics Unlocked: <b style="color: #fff" id="home-unlocked-count">1 / 18</b>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. TOPIC ADVENTURE MAP -->
+    <div class="screen" id="map-screen">
+        <div class="section-title" style="font-size: 1.3rem;"><i class="fa-solid fa-map-location-dot"></i> Topic Adventure Map</div>
+        <p style="font-size: 0.8rem; color: var(--text-sub); margin-bottom: 12px;">Score 70% or higher to unlock the next chapter!</p>
+        
+        <div class="map-container" id="topics-map-list">
+            <!-- Dynamic Topics Injected via JS -->
+        </div>
+    </div>
+
+    <!-- 4. VISUAL NOTES PAGE -->
+    <div class="screen" id="notes-screen">
+        <div class="notes-card">
+            <div class="notes-header">
+                <div>
+                    <span class="node-badge" id="notes-topic-badge">UNIT 1</span>
+                    <h2 style="font-family: var(--font-heading); font-size: 1.2rem; color: #fff;" id="notes-topic-title">Scientific Skills</h2>
+                </div>
+                <button class="btn-action btn-purple" style="padding: 6px 12px; font-size: 0.8rem;" onclick="app.navTo('map-screen')">Close</button>
+            </div>
+            
+            <div class="notes-content" id="notes-body">
+                <!-- Visual Notes Injected via JS -->
+            </div>
+
+            <div style="margin-top: 14px; display: flex; gap: 10px;">
+                <button class="btn-action btn-primary w-100" onclick="app.startQuizForCurrentTopic()">
+                    <i class="fa-solid fa-gamepad"></i> START QUIZ
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 5. QUIZ PAGE -->
+    <div class="screen" id="quiz-screen">
+        <div class="quiz-header">
+            <button style="background:none; border:none; color:#fff; font-size:1.2rem;" onclick="app.navTo('map-screen')"><i class="fa-solid fa-xmark"></i></button>
+            <div class="quiz-progress-bar">
+                <div class="quiz-progress-fill" id="quiz-progress-fill"></div>
+            </div>
+            <span style="font-family: var(--font-heading); font-size:0.9rem;" id="quiz-q-num">1/5</span>
+        </div>
+
+        <div class="question-card">
+            <span class="q-level-tag" id="q-level-tag">Level 1: Recall</span>
+            <div class="q-text" id="q-text">Question text goes here?</div>
+            
+            <div class="options-grid" id="q-options-container">
+                <!-- Options injected via JS -->
+            </div>
+
+            <div class="feedback-box" id="q-feedback-box">
+                <div style="font-weight: 800; margin-bottom: 4px;" id="feedback-title">Correct!</div>
+                <div id="feedback-explanation">Explanation here...</div>
+            </div>
+        </div>
+
+        <button class="btn-action btn-success w-100" id="quiz-next-btn" style="display: none;" onclick="app.nextQuestion()">
+            NEXT QUESTION <i class="fa-solid fa-arrow-right"></i>
+        </button>
+    </div>
+
+    <!-- 6. CHALLENGE ARENA -->
+    <div class="screen" id="arena-screen">
+        <div class="section-title"><i class="fa-solid fa-dragon"></i> Boss Challenge Arena</div>
+        <p style="font-size: 0.85rem; color: var(--text-sub); margin-bottom: 14px;">Face the Ultimate Science Bosses! Mixed KBAT questions from all topics.</p>
+
+        <div class="card text-center" style="border-color: var(--accent-orange);">
+            <i class="fa-solid fa-skull-crossbones" style="font-size: 3rem; color: var(--accent-orange); margin-bottom: 10px;"></i>
+            <h3 style="font-family: var(--font-heading); color: #fff;">Mecha-Lab Guardian</h3>
+            <p style="font-size: 0.8rem; color: var(--text-sub); margin-bottom: 12px;">10 High-level questions • Time Limit: 30s per question</p>
+            <button class="btn-action btn-primary" onclick="app.startBossChallenge()">CHALLENGE BOSS</button>
+        </div>
+    </div>
+
+    <!-- 7. RESULTS PAGE -->
+    <div class="screen" id="results-screen">
+        <div class="card results-card">
+            <h2 style="font-family: var(--font-heading); color: var(--accent-gold); margin-bottom: 12px;" id="result-title">QUEST COMPLETED!</h2>
+            
+            <div class="result-score-circle">
+                <div class="score-num" id="result-score-num">80%</div>
+                <div class="score-label">ACCURACY</div>
+            </div>
+
+            <p style="font-size: 0.9rem; color: #fff; margin-bottom: 16px;" id="result-msg">Awesome job! You mastered this topic!</p>
+
+            <div class="flex-row" style="justify-content: center; margin-bottom: 20px;">
+                <div class="user-stat"><i class="fa-solid fa-bolt" style="color:var(--accent-green);"></i> +<span id="res-xp">50</span> XP</div>
+                <div class="user-stat"><i class="fa-solid fa-coins stat-coin"></i> +<span id="res-coins">20</span></div>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 10px;">
+                <button class="btn-action btn-success w-100" onclick="app.navTo('map-screen')">CONTINUE MAP</button>
+                <button class="btn-action btn-purple w-100" onclick="app.retryCurrentTopic()">RETRY TOPIC</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 8. PROGRESS DASHBOARD -->
+    <div class="screen" id="progress-screen">
+        <div class="section-title"><i class="fa-solid fa-chart-line"></i> Hero Statistics</div>
+
+        <div class="card">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <div style="font-size: 0.8rem; color: var(--text-sub);">Current Rank</div>
+                    <div style="font-family: var(--font-heading); font-size: 1.2rem; color: var(--accent-gold);" id="dash-rank">Explorer</div>
+                </div>
+                <i class="fa-solid fa-shield-halved" style="font-size: 2.2rem; color: var(--accent-purple);"></i>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="section-title" style="font-size: 1rem;"><i class="fa-solid fa-award"></i> Badges Earned</div>
+            <div class="badge-grid" id="badges-container">
+                <!-- Badges injected via JS -->
+            </div>
+        </div>
+    </div>
+
+    <!-- 9. TEACHER / PARENT VIEW -->
+    <div class="screen" id="parent-screen">
+        <div class="parent-portal-header">
+            <h2 style="font-family: var(--font-heading); color: #fff;"><i class="fa-solid fa-user-tie"></i> Teacher & Parent Dashboard</h2>
+            <p style="font-size: 0.8rem; color: #b2dfdb;">Track progress, review weak areas, and manage settings.</p>
+        </div>
+
+        <div class="card">
+            <div class="section-title" style="font-size: 1rem;"><i class="fa-solid fa-chart-pie"></i> Learning Overview</div>
+            <div class="parent-stat-row">
+                <span>Total Topics Attempted:</span>
+                <b id="parent-attempted">0 / 18</b>
+            </div>
+            <div class="parent-stat-row">
+                <span>Overall Mastery:</span>
+                <b id="parent-mastery" style="color: var(--accent-green);">0%</b>
+            </div>
+            <div class="parent-stat-row">
+                <span>Weak Topics Identified:</span>
+                <b id="parent-weak" style="color: var(--accent-pink);">None</b>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="section-title" style="font-size: 1rem;"><i class="fa-solid fa-sliders"></i> Controls</div>
+            <button class="btn-action btn-primary w-100" style="margin-bottom: 10px; font-size: 0.9rem;" onclick="app.resetData()">
+                <i class="fa-solid fa-trash-arrow-up"></i> Reset Student Progress
+            </button>
+        </div>
+    </div>
+
+    <!-- BOTTOM NAVIGATION BAR -->
+    <div class="bottom-nav" id="bottom-nav" style="display: none;">
+        <button class="nav-btn active" onclick="app.navTo('home-screen', this)"><i class="fa-solid fa-house"></i> Home</button>
+        <button class="nav-btn" onclick="app.navTo('map-screen', this)"><i class="fa-solid fa-map"></i> Map</button>
+        <button class="nav-btn" onclick="app.navTo('arena-screen', this)"><i class="fa-solid fa-dragon"></i> Arena</button>
+        <button class="nav-btn" onclick="app.navTo('progress-screen', this)"><i class="fa-solid fa-chart-simple"></i> Stats</button>
+        <button class="nav-btn" onclick="app.navTo('parent-screen', this)"><i class="fa-solid fa-user-shield"></i> Parent</button>
+    </div>
+
+</div>
+
+<script>
+/**
+ * SCIENCE QUEST YEAR 4 - Main Application Engine
+ * Contains syllabus data, state management, gamification logic, and responsive UI interactions.
+ */
+
+// --- 1. TOPICS & QUESTION BANK DATA ---
+const TOPICS_DATA = [
+    {
+        id: "unit1",
+        title: "Scientific Skills",
+        badge: "UNIT 1",
+        icon: "fa-flask-vial",
+        notes: `
+            <h3>12 Science Process Skills</h3>
+            <ul>
+                <li><b>Observing:</b> Using senses (sight, touch, smell, hearing, taste) to gather information.</li>
+                <li><b>Classifying:</b> Grouping objects based on common characteristics.</li>
+                <li><b>Measuring & Using Numbers:</b> Making quantitative observations using tools.</li>
+                <li><b>Making Inferences:</b> Stating an initial conclusion to explain an event.</li>
+                <li><b>Predicting:</b> Making expectations about an event based on observations.</li>
+                <li><b>Communicating:</b> Presenting ideas/data in tables, graphs, or diagrams.</li>
+                <li><b>Space-Time Relationship:</b> Describing changes in parameter with time.</li>
+                <li><b>Interpreting Data:</b> Giving rational explanations about data.</li>
+                <li><b>Defining Operationally:</b> Defining a concept by stating what can be done and observed.</li>
+                <li><b>Controlling Variables:</b> Manipulated (changed), Responding (measured), Constant (kept same).</li>
+                <li><b>Making Hypotheses:</b> Stating a general relationship between manipulated & responding variables.</li>
+                <li><b>Experimenting:</b> Planning and conducting an investigation to test a hypothesis.</li>
+            </ul>
+        `,
+        questions: [
+            {
+                level: "Level 1: Recall",
+                text: "Which sense is used to observe the color of a flower?",
+                options: ["Sense of Touch", "Sense of Sight", "Sense of Hearing", "Sense of Smell"],
+                correct: 1,
+                explanation: "We use our eyes (Sense of Sight) to observe colors."
+            },
+            {
+                level: "Level 2: Understanding",
+                text: "In an experiment, the variable that is kept the same throughout is called the...",
+                options: ["Manipulated Variable", "Responding Variable", "Constant Variable", "Hypothesis Variable"],
+                correct: 2,
+                explanation: "Constant variables are kept identical to ensure a fair test."
+            },
+            {
+                level: "Level 3: Application",
+                text: "An investigation was conducted to measure water left after soaking paper towels of different thicknesses. What is the operational definition of water absorption?",
+                options: ["The thickness of the paper towel", "The volume of water remaining in the beaker", "The type of beaker used", "The duration of soaking"],
+                correct: 1,
+                explanation: "Operational definition is defined by what you measure/observe — here, the remaining volume of water."
+            },
+            {
+                level: "Level 4: KBAT Challenge",
+                text: "A student predicts that plants given more fertilizer will grow taller. How can she state a suitable hypothesis?",
+                options: [
+                    "If the amount of fertilizer increases, the height of the plant increases.",
+                    "Fertilizer is good for all plants.",
+                    "The height of the plant changes every day.",
+                    "All plants need water and sunlight."
+                ],
+                correct: 0,
+                explanation: "A hypothesis directly links the manipulated variable (fertilizer) with the responding variable (height)."
+            }
+        ]
+    },
+    {
+        id: "unit2",
+        title: "Humans",
+        badge: "UNIT 2",
+        icon: "fa-lungs",
+        notes: `
+            <h3>Human Life Processes</h3>
+            <ul>
+                <li><b>Breathing:</b> Organs involved are Nose, Trachea, and Lungs.</li>
+                <li><b>Inhalation Passage:</b> Nose → Trachea → Lungs (Chest moves UP).</li>
+                <li><b>Exhalation Passage:</b> Lungs → Trachea → Nose (Chest moves DOWN).</li>
+                <li><b>Excretion Organs & Products:</b>
+                    <br>- Lungs: Carbon dioxide & water vapour
+                    <br>- Kidneys: Urine
+                    <br>- Skin: Sweat
+                </li>
+                <li><b>Defecation:</b> Removal of undigested food (faeces) through the anus.</li>
+                <li><b>Response to Stimuli:</b> Sensory organs respond to light, sound, touch, smell, and taste to protect us from harm.</li>
+            </ul>
+        `,
+        questions: [
+            {
+                level: "Level 1: Recall",
+                text: "Which of the following is the correct pathway during human exhalation?",
+                options: ["Nose → Trachea → Lungs", "Lungs → Trachea → Nose", "Trachea → Nose → Lungs", "Lungs → Nose → Trachea"],
+                correct: 1,
+                explanation: "During exhalation, air travels out: Lungs → Trachea → Nose."
+            },
+            {
+                level: "Level 2: Understanding",
+                text: "Which organ excretes urine from the human body?",
+                options: ["Lungs", "Skin", "Kidneys", "Anus"],
+                correct: 2,
+                explanation: "Kidneys filter waste to produce urine."
+            },
+            {
+                level: "Level 3: Application",
+                text: "Why do humans quickly withdraw their hand when accidentally touching a hot kettle?",
+                options: ["To digest food faster", "To respond to a stimulus and prevent injury", "To increase breathing rate", "To excrete sweat"],
+                correct: 1,
+                explanation: "Responding to touch/heat stimuli helps protect our body from serious burns/injury."
+            }
+        ]
+    },
+    {
+        id: "unit3",
+        title: "Animals",
+        badge: "UNIT 3",
+        icon: "fa-hippo",
+        notes: `
+            <h3>Breathing Organs & Vertebrates</h3>
+            <ul>
+                <li><b>Breathing Organs:</b> Lungs (Cat, Dolphin), Gills (Fish, Crab), Moist Skin (Frog, Earthworm), Spiracles (Caterpillar, Grasshopper).</li>
+                <li><b>Dual Breathing Organs:</b> Animals like frogs live on land and water using both Lungs and Moist Skin.</li>
+                <li><b>Vertebrates:</b> Animals WITH backbones (Mammals, Reptiles, Amphibians, Birds, Fish).</li>
+                <li><b>Invertebrates:</b> Animals WITHOUT backbones (Insects, Worms, Snails).</li>
+            </ul>
+        `,
+        questions: [
+            {
+                level: "Level 1: Recall",
+                text: "Grasshoppers breathe through small breathing holes called...",
+                options: ["Gills", "Spiracles", "Lungs", "Moist Skin"],
+                correct: 1,
+                explanation: "Insects like grasshoppers breathe through spiracles on their body sides."
+            },
+            {
+                level: "Level 2: Understanding",
+                text: "Which animal group contains ONLY vertebrates?",
+                options: ["Horse, Eagle, Frog, Fish", "Snail, Earthworm, Butterfly, Crab", "Cat, Ant, Snake, Fly", "Jellyfish, Octopus, Turtle, Bee"],
+                correct: 0,
+                explanation: "Horses, eagles, frogs, and fish all have backbones (vertebrates)."
+            }
+        ]
+    },
+    {
+        id: "unit4",
+        title: "Plants",
+        badge: "UNIT 4",
+        icon: "fa-seedling",
+        notes: `
+            <h3>Plant Responses & Photosynthesis</h3>
+            <ul>
+                <li><b>Plant Responses:</b>
+                    <br>- Roots respond to <b>Water</b> and <b>Gravity</b> (grow downwards).
+                    <br>- Shoots respond to <b>Sunlight</b> (grow towards light).
+                    <br>- Leaves of Mimosa respond to <b>Touch</b>.
+                </li>
+                <li><b>Photosynthesis:</b> Process where plants make their own food.</li>
+                <li><b>Needs:</b> Sunlight + Chlorophyll + Carbon Dioxide + Water.</li>
+                <li><b>Products:</b> Glucose (stored as starch) + Oxygen.</li>
+            </ul>
+        `,
+        questions: [
+            {
+                level: "Level 1: Recall",
+                text: "What green substance in leaves absorbs sunlight for photosynthesis?",
+                options: ["Oxygen", "Starch", "Chlorophyll", "Glucose"],
+                correct: 2,
+                explanation: "Chlorophyll is the green pigment in plants that traps sunlight."
+            },
+            {
+                level: "Level 2: Understanding",
+                text: "What are the two main products of photosynthesis?",
+                options: ["Carbon dioxide and Water", "Glucose and Oxygen", "Nitrogen and Sunlight", "Chlorophyll and Starch"],
+                correct: 1,
+                explanation: "Photosynthesis produces Glucose (food) and releases Oxygen gas."
+            }
+        ]
+    },
+    {
+        id: "unit5",
+        title: "Properties of Light",
+        badge: "UNIT 5",
+        icon: "fa-sun",
+        notes: `
+            <h3>Properties & Applications of Light</h3>
+            <ul>
+                <li><b>Light Travels in Straight Lines:</b> Enables shadow formation when blocked by opaque/translucent objects.</li>
+                <li><b>Reflection of Light:</b> Light bounces off smooth, shiny surfaces (e.g., mirrors, periscopes, side mirrors).</li>
+                <li><b>Refraction of Light:</b> Light bends when passing through two different mediums (e.g., pencil looking bent in a glass of water, rainbow formation).</li>
+            </ul>
+        `,
+        questions: [
+            {
+                level: "Level 1: Recall",
+                text: "Which device uses light reflection to let a submarine crew view above water?",
+                options: ["Telescope", "Periscope", "Microscope", "Magnifying Glass"],
+                correct: 1,
+                explanation: "Periscopes use mirrors to reflect light downwards into the submarine."
+            },
+            {
+                level: "Level 2: Understanding",
+                text: "A straw in a glass of water looks bent due to...",
+                options: ["Light reflection", "Light refraction", "Shadow formation", "Light traveling backwards"],
+                correct: 1,
+                explanation: "Refraction (bending of light) occurs when light moves between water and air."
+            }
+        ]
+    }
+];
+
+// --- 2. APP STATE MANAGEMENT ---
+const appState = {
+    user: {
+        name: "Hero Pupil",
+        rank: "Explorer",
+        level: 2,
+        xp: 120,
+        nextLvlXp: 300,
+        coins: 240,
+        gems: 15,
+        streak: 3
+    },
+    unlockedTopics: ["unit1", "unit2"],
+    topicScores: {},
+    mistakeBank: [],
+    currentTopicId: null,
+    currentQuestions: [],
+    currentQIndex: 0,
+    currentScore: 0,
+    selectedOption: null
+};
+
+// --- 3. CORE APP ENGINE OBJECT ---
+const app = {
+    init: function() {
+        this.loadLocalStorage();
+        this.updateHeaderStats();
+        this.renderMap();
+        this.renderBadges();
+        this.updateHomeUI();
+    },
+
+    loadLocalStorage: function() {
+        const saved = localStorage.getItem("sq_year4_data");
+        if(saved) {
+            try {
+                const parsed = JSON.parse(saved);
+                Object.assign(appState, parsed);
+            } catch(e) { console.error("Save load error", e); }
+        }
+    },
+
+    saveLocalStorage: function() {
+        localStorage.setItem("sq_year4_data", JSON.stringify(appState));
+    },
+
+    startApp: function() {
+        document.getElementById('splash-screen').classList.remove('active');
+        document.getElementById('top-bar').style.display = 'flex';
+        document.getElementById('bottom-nav').style.display = 'flex';
+        this.navTo('home-screen');
+    },
+
+    navTo: function(screenId, navBtnEl) {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById(screenId).classList.add('active');
+
+        if(navBtnEl) {
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+            navBtnEl.classList.add('active');
+        }
+
+        if(screenId === 'home-screen') this.updateHomeUI();
+        if(screenId === 'parent-screen') this.updateParentDashboard();
+    },
+
+    updateHeaderStats: function() {
+        document.getElementById('hdr-streak').innerText = appState.user.streak;
+        document.getElementById('hdr-coins').innerText = appState.user.coins;
+        document.getElementById('hdr-gems').innerText = appState.user.gems;
+        document.getElementById('hdr-level').innerText = `Lvl ${appState.user.level}`;
+    },
+
+    updateHomeUI: function() {
+        document.getElementById('home-rank-title').innerText = `Rank: ${appState.user.rank}`;
+        document.getElementById('home-xp-text').innerText = `${appState.user.xp} / ${appState.user.nextLvlXp} XP to Lvl ${appState.user.level + 1}`;
+        const pct = Math.min(100, Math.round((appState.user.xp / appState.user.nextLvlXp) * 100));
+        document.getElementById('home-xp-fill').style.width = pct + '%';
+        
+        document.getElementById('mistake-count').innerText = appState.mistakeBank.length;
+        document.getElementById('home-unlocked-count').innerText = `${appState.unlockedTopics.length} / ${TOPICS_DATA.length}`;
+
+        // Calculate total mastery %
+        let totalPct = 0;
+        const keys = Object.keys(appState.topicScores);
+        if(keys.length > 0) {
+            let sum = 0;
+            keys.forEach(k => sum += appState.topicScores[k]);
+            totalPct = Math.round(sum / TOPICS_DATA.length);
+        }
+        document.getElementById('home-mastery-pct').innerText = totalPct + '%';
+    },
+
+    renderMap: function() {
+        const container = document.getElementById('topics-map-list');
+        container.innerHTML = '';
+
+        TOPICS_DATA.forEach((t, idx) => {
+            const isUnlocked = appState.unlockedTopics.includes(t.id);
+            const score = appState.topicScores[t.id] || 0;
+
+            const div = document.createElement('div');
+            div.className = `topic-node ${isUnlocked ? '' : 'locked'}`;
+            div.onclick = () => {
+                if(isUnlocked) app.openTopicNotes(t.id);
+                else alert("Score 70% or higher in earlier topics to unlock!");
+            };
+
+            div.innerHTML = `
+                <div class="node-icon">
+                    <i class="fa-solid ${t.icon}"></i>
+                </div>
+                <div class="node-details">
+                    <span class="node-badge">${t.badge}</span>
+                    <div class="node-title">${t.title}</div>
+                    <div class="node-sub">${isUnlocked ? `Best Score: ${score}%` : 'Locked Level'}</div>
+                    <div class="node-stars">
+                        <i class="fa-solid fa-star" style="color: ${score >= 70 ? '#ffd700' : '#555'};"></i>
+                        <i class="fa-solid fa-star" style="color: ${score >= 85 ? '#ffd700' : '#555'};"></i>
+                        <i class="fa-solid fa-star" style="color: ${score >= 100 ? '#ffd700' : '#555'};"></i>
+                    </div>
+                </div>
+                <div>
+                    ${isUnlocked ? '<i class="fa-solid fa-chevron-right" style="color:var(--accent-gold);"></i>' : '<i class="fa-solid fa-lock" style="color:#aaa;"></i>'}
+                </div>
+            `;
+            container.appendChild(div);
+        });
+    },
+
+    openTopicNotes: function(topicId) {
+        const topic = TOPICS_DATA.find(t => t.id === topicId);
+        if(!topic) return;
+
+        appState.currentTopicId = topicId;
+        document.getElementById('notes-topic-badge').innerText = topic.badge;
+        document.getElementById('notes-topic-title').innerText = topic.title;
+        document.getElementById('notes-body').innerHTML = topic.notes;
+
+        this.navTo('notes-screen');
+    },
+
+    startQuizForCurrentTopic: function() {
+        const topic = TOPICS_DATA.find(t => t.id === appState.currentTopicId);
+        if(!topic) return;
+
+        appState.currentQuestions = [...topic.questions];
+        appState.currentQIndex = 0;
+        appState.currentScore = 0;
+
+        this.renderQuestion();
+        this.navTo('quiz-screen');
+    },
+
+    renderQuestion: function() {
+        const q = appState.currentQuestions[appState.currentQIndex];
+        appState.selectedOption = null;
+
+        // Reset UI
+        document.getElementById('q-feedback-box').style.display = 'none';
+        document.getElementById('quiz-next-btn').style.display = 'none';
+        
+        // Progress bar
+        const pct = Math.round(((appState.currentQIndex + 1) / appState.currentQuestions.length) * 100);
+        document.getElementById('quiz-progress-fill').style.width = pct + '%';
+        document.getElementById('quiz-q-num').innerText = `${appState.currentQIndex + 1}/${appState.currentQuestions.length}`;
+
+        document.getElementById('q-level-tag').innerText = q.level;
+        document.getElementById('q-text').innerText = q.text;
+
+        const optionsContainer = document.getElementById('q-options-container');
+        optionsContainer.innerHTML = '';
+
+        q.options.forEach((opt, idx) => {
+            const btn = document.createElement('button');
+            btn.className = 'option-btn';
+            btn.innerHTML = `<span>${opt}</span> <i class="fa-regular fa-circle"></i>`;
+            btn.onclick = () => app.selectOption(idx, btn);
+            optionsContainer.appendChild(btn);
+        });
+    },
+
+    selectOption: function(idx, btnEl) {
+        if(appState.selectedOption !== null) return; // Prevent changing after select
+        
+        appState.selectedOption = idx;
+        const q = appState.currentQuestions[appState.currentQIndex];
+        const allBtns = document.querySelectorAll('.option-btn');
+        const feedbackBox = document.getElementById('q-feedback-box');
+
+        if(idx === q.correct) {
+            btnEl.classList.add('correct');
+            btnEl.querySelector('i').className = 'fa-solid fa-circle-check';
+            feedbackBox.className = 'feedback-box correct';
+            document.getElementById('feedback-title').innerText = '✨ Great Job! Correct!';
+            appState.currentScore++;
+        } else {
+            btnEl.classList.add('incorrect');
+            btnEl.querySelector('i').className = 'fa-solid fa-circle-xmark';
+            allBtns[q.correct].classList.add('correct');
+            
+            feedbackBox.className = 'feedback-box incorrect';
+            document.getElementById('feedback-title').innerText = '❌ Not quite right!';
+            
+            // Add to mistake bank
+            appState.mistakeBank.push(q);
+        }
+
+        document.getElementById('feedback-explanation').innerText = q.explanation;
+        feedbackBox.style.display = 'block';
+        document.getElementById('quiz-next-btn').style.display = 'inline-flex';
+    },
+
+    nextQuestion: function() {
+        appState.currentQIndex++;
+        if(appState.currentQIndex < appState.currentQuestions.length) {
+            this.renderQuestion();
+        } else {
+            this.finishQuiz();
+        }
+    },
+
+    finishQuiz: function() {
+        const total = appState.currentQuestions.length;
+        const pct = Math.round((appState.currentScore / total) * 100);
+        
+        // Save score
+        if(appState.currentTopicId) {
+            appState.topicScores[appState.currentTopicId] = Math.max(
+                appState.topicScores[appState.currentTopicId] || 0,
+                pct
+            );
+
+            // Unlock next topic if >= 70%
+            if(pct >= 70) {
+                const currentIdx = TOPICS_DATA.findIndex(t => t.id === appState.currentTopicId);
+                if(currentIdx < TOPICS_DATA.length - 1) {
+                    const nextTopicId = TOPICS_DATA[currentIdx + 1].id;
+                    if(!appState.unlockedTopics.includes(nextTopicId)) {
+                        appState.unlockedTopics.push(nextTopicId);
+                    }
+                }
+            }
+        }
+
+        // Rewards
+        const earnedXP = appState.currentScore * 15;
+        const earnedCoins = appState.currentScore * 5;
+        appState.user.xp += earnedXP;
+        appState.user.coins += earnedCoins;
+
+        // Check Level Up
+        if(appState.user.xp >= appState.user.nextLvlXp) {
+            appState.user.level++;
+            appState.user.nextLvlXp += 200;
+            appState.user.rank = "Science Hero";
+        }
+
+        this.saveLocalStorage();
+        this.updateHeaderStats();
+        this.renderMap();
+
+        // Show Results Page
+        document.getElementById('result-score-num').innerText = pct + '%';
+        document.getElementById('res-xp').innerText = earnedXP;
+        document.getElementById('res-coins').innerText = earnedCoins;
+
+        if(pct >= 70) {
+            document.getElementById('result-title').innerText = '🎉 QUEST PASSED!';
+            document.getElementById('result-msg').innerText = 'Awesome job! You unlocked the next path!';
+            confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+        } else {
+            document.getElementById('result-title').innerText = '⚡ TRY AGAIN!';
+            document.getElementById('result-msg').innerText = 'You need 70% accuracy to unlock the next level.';
+        }
+
+        this.navTo('results-screen');
+    },
+
+    retryCurrentTopic: function() {
+        this.startQuizForCurrentTopic();
+    },
+
+    startMistakeReview: function() {
+        if(appState.mistakeBank.length === 0) {
+            alert("No wrong answers in your bank! Excellent job!");
+            return;
+        }
+        appState.currentQuestions = [...appState.mistakeBank];
+        appState.currentTopicId = null; // General review
+        appState.currentQIndex = 0;
+        appState.currentScore = 0;
+        this.renderQuestion();
+        this.navTo('quiz-screen');
+    },
+
+    startBossChallenge: function() {
+        // Gather all questions from all topics
+        let allQ = [];
+        TOPICS_DATA.forEach(t => allQ = allQ.concat(t.questions));
+        
+        appState.currentQuestions = allQ.sort(() => 0.5 - Math.random()).slice(0, 5);
+        appState.currentTopicId = null;
+        appState.currentQIndex = 0;
+        appState.currentScore = 0;
+
+        this.renderQuestion();
+        this.navTo('quiz-screen');
+    },
+
+    renderBadges: function() {
+        const container = document.getElementById('badges-container');
+        container.innerHTML = `
+            <div class="badge-item"><i class="fa-solid fa-bolt badge-icon"></i><div class="badge-name">First Step</div></div>
+            <div class="badge-item"><i class="fa-solid fa-fire badge-icon"></i><div class="badge-name">3-Day Streak</div></div>
+            <div class="badge-item"><i class="fa-solid fa-brain badge-icon"></i><div class="badge-name">Quiz Master</div></div>
+            <div class="badge-item"><i class="fa-solid fa-crown badge-icon" style="color:#555;"></i><div class="badge-name">Science Hero</div></div>
+        `;
+    },
+
+    updateParentDashboard: function() {
+        document.getElementById('parent-attempted').innerText = `${Object.keys(appState.topicScores).length} / ${TOPICS_DATA.length}`;
+        
+        let sum = 0;
+        let count = 0;
+        let weak = [];
+
+        Object.keys(appState.topicScores).forEach(id => {
+            const sc = appState.topicScores[id];
+            sum += sc;
+            count++;
+            if(sc < 70) {
+                const top = TOPICS_DATA.find(t => t.id === id);
+                if(top) weak.push(top.title);
+            }
+        });
+
+        const avg = count > 0 ? Math.round(sum / TOPICS_DATA.length) : 0;
+        document.getElementById('parent-mastery').innerText = avg + '%';
+        document.getElementById('parent-weak').innerText = weak.length > 0 ? weak.join(', ') : 'None';
+    },
+
+    resetData: function() {
+        if(confirm("Are you sure you want to reset all pupil progress?")) {
+            localStorage.removeItem("sq_year4_data");
+            location.reload();
+        }
+    }
+};
+
+// Initialize App on DOM Load
+document.addEventListener('DOMContentLoaded', () => {
+    app.init();
+});
+</script>
+</body>
+</html>
